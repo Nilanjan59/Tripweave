@@ -32,7 +32,7 @@ export async function loadApproach(panel,city,hotel){
  const r=await fetch('/api/approach?'+new URLSearchParams({city,hotel}));if(!r.ok)throw Error();
  const data=await r.json();if(!data.found)throw Error();
  const airport={Goa:'Dabolim',Jaipur:'Jaipur',Manali:'Bhuntar'}[city];
- panel.textContent='From '+airport+' airport, the mapped drive to '+data.match+' is about '+data.km+' km.'+(data.rise!==null?' Across roughly the last '+data.lastKm.toFixed(1)+' km, sampled terrain '+(data.rise<0?'drops ':'rises ')+Math.abs(data.rise)+' m overall.':'')+' The hotel driveway grade and surface are unverified. Route by OSRM / OpenStreetMap. Terrain by Open-Meteo.';
+ panel.textContent='From '+(airport?airport+' airport':city+' centre')+', the mapped drive to '+data.match+' is about '+data.km+' km.'+(data.rise!==null?' Across roughly the last '+data.lastKm.toFixed(1)+' km, sampled terrain '+(data.rise<0?'drops ':'rises ')+Math.abs(data.rise)+' m overall.':'')+' The hotel driveway grade and surface are unverified. Route by OSRM / OpenStreetMap. Terrain by Open-Meteo.';
  }catch{panel.textContent='A mapped approach estimate is unavailable for this property. Use the hotel address and Google Maps route below.';}
 }
 
@@ -46,9 +46,9 @@ export function connectDistances(root,city,places,mode){
  distanceCache.get(key).then(data=>{
  if(!box.isConnected)return;
  for(const a of box.querySelectorAll('a')){
- const label=a.textContent.replace(/ on Maps$/,'');
+ const label=a.dataset.place||a.textContent.replace(/ on Maps$/,'');
  const estimate=data.distances?.find(d=>d.label===label);
- if(estimate){a.textContent=label+' · '+estimate.km+' km · '+estimate.minutes+' min';a.title='Estimated drive from '+(data.provider||'OpenStreetMap / OSRM')+'. Open Google Maps for current directions.';}
+ if(estimate){a.textContent=(a.dataset.place?'':label+' · ')+estimate.km+' km · '+estimate.minutes+' min';a.title='Estimated drive from '+(data.provider||'OpenStreetMap / OSRM')+'. Open Google Maps for current directions.';}
  }
  });
  }
@@ -59,7 +59,7 @@ export async function providerPanel(el,path,params){
  try{
  const r=await fetch('/api/'+path+'?'+new URLSearchParams(params));if(!r.ok)throw Error();
  const d=await r.json();el.replaceChildren();
- if(d.configured===false){el.textContent=path==='offers'?'Automatic provider quotes are awaiting a pricing connection.':'Live video discovery is awaiting a YouTube connection.';return;}
+ if(d.configured===false){el.textContent=path==='offers'?'Check current availability and room totals with the booking sites below.':'';return;}
  if(!d.items.length){el.textContent='No matching live results returned.';return;}
  for(const item of d.items){
  const link=document.createElement('a');link.className='row link';link.target='_blank';link.rel='noopener noreferrer';link.href=item.url;link.textContent=path==='offers'?item.source+' · ₹'+item.amount.toLocaleString('en-IN')+' total including taxes':item.title+' · '+item.date.slice(0,10)+' · '+item.views.toLocaleString('en-IN')+' views';el.append(link);

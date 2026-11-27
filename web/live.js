@@ -119,3 +119,5 @@ export function connectLivePanels(root) {
   for(const host of root.querySelectorAll('[data-weather]'))void showWeather(host);
   for(const host of root.querySelectorAll('[data-guides]'))void showGuides(host);
 }
+
+export function registerCity(name,coordinates,articles){destinations[name]={coordinates,articles,location:name};}

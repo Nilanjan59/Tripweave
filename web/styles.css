@@ -11,3 +11,5 @@
 @media(max-width:500px){.hotel-access .route-form{grid-template-columns:1fr}}
 
 .quote-row{padding:1rem 0;border-bottom:1px solid #dce4e0;margin-bottom:1rem}.quote-row .inline{align-items:end}.day>.pill{margin-bottom:.6rem}.rate small{line-height:1.4}
+
+.compare-scroll{overflow-x:auto}.compare-table{width:100%;border-collapse:collapse;font-size:1rem}.compare-table th,.compare-table td{padding:.75rem;text-align:left;border-bottom:1px solid #dce4e0;min-width:7rem}.compare-table a,details summary{color:#096858}.search input[list]{width:100%;min-width:0}
