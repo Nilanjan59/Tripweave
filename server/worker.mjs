@@ -31,7 +31,13 @@ async function discover(city){
  const query='[out:json][timeout:9];(nwr(around:6500,'+lat+','+lon+')["tourism"~"^(hotel|attraction|museum)$"]["name"];);out center 180;';
  let items=[];try{items=(await external('https://overpass-api.de/api/interpreter?'+new URLSearchParams({data:query}))).elements||[];}catch{}
  const named=(types,limit)=>[...new Set(items.filter(p=>types.includes(p.tags.tourism)).map(p=>p.tags['name:en']||p.tags.name))].slice(0,limit);
- return json({...place,hotels:named(['hotel'],8),anchors:named(['attraction','museum'],3)});
+ async function nearby(query,tags,count){
+ const params=new URLSearchParams({q:query,limit:'40',lat,lon,bbox:[lon-.13,lat-.13,lon+.13,lat+.13].join(',')});
+ try{const data=await external('https://photon.komoot.io/api/?'+params);return [...new Set(data.features.filter(f=>tags.includes(f.properties.osm_value)).map(f=>f.properties.name).filter(Boolean))].slice(0,count);}catch{return [];}
+ }
+ let hotels=named(['hotel'],8),anchors=named(['attraction','museum'],3);
+ [hotels,anchors]=await Promise.all([hotels.length?hotels:nearby('hotel',['hotel','guest_house','hostel'],8),anchors.length?anchors:nearby('museum',['attraction','museum'],3)]);
+ return json({...place,hotels,anchors});
 }
 const usage=new Map();
 function limited(req){
@@ -128,7 +134,7 @@ export default {async fetch(req,env){
  const raw=await req.text();if(raw.length>25000)return json({},413);
  const body=JSON.parse(raw);
  if(!validCity(body.city)||typeof body.message!=='string'||body.message.length>240||!Array.isArray(body.days)||body.days.length>15)return json({},400);
- const response=await providerJSON('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:env.OPENAI_MODEL||'gpt-5-mini',store:false,reasoning:{effort:'minimal'},input:'Return JSON. '+JSON.stringify(body),instructions:'Propose edits to existing unlocked travel itinerary stops matching the request. Return JSON with summary (plain text) and edits (array of objects with id, day index zero based, name, time HH:MM). Include changed stops only. Never invent reservations, availability or opening times. If request cannot be fulfilled explain why and return empty edits.',text:{format:{type:'json_object'}}})});
+ const response=await providerJSON('https://api.openai.com/v1/responses',{method:'POST',headers:{Authorization:'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({model:env.OPENAI_MODEL||'gpt-5-mini',store:false,reasoning:{effort:'minimal'},input:'Return JSON. '+JSON.stringify(body),instructions:'Propose edits to existing unlocked travel itinerary stops matching the request. Return JSON with summary (plain text) and edits (array of objects with id, day index zero based, name, time HH:MM). Include changed stops only. Never invent reservations, availability or opening times. If request cannot be fulfilled explain why and return empty edits.',text:{format:{type:'json_schema',name:'itinerary_edits',strict:true,schema:{type:'object',additionalProperties:false,properties:{summary:{type:'string'},edits:{type:'array',items:{type:'object',additionalProperties:false,properties:{id:{type:'string'},day:{type:'integer'},name:{type:'string'},time:{type:'string'}},required:['id','day','name','time']}}},required:['summary','edits']}}}})});
  const output=response.output?.flatMap(x=>x.content||[]).find(x=>x.type==='output_text');const plan=JSON.parse(output.text);
  if(typeof plan.summary!=='string'||!Array.isArray(plan.edits))throw Error();
  return json({summary:plan.summary.slice(0,1200),edits:plan.edits.slice(0,75)});

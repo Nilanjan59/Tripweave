@@ -1,5 +1,6 @@
 export const suggestions=['Ahmedabad','Agra','Amritsar','Bengaluru','Bhuj','Chennai','Darjeeling','Delhi','Diu','Gangtok','Goa','Hyderabad','Jaipur','Jaisalmer','Jodhpur','Kochi','Kolkata','Leh','Manali','Mumbai','Munnar','Mysuru','Ooty','Pondicherry','Pune','Rishikesh','Shillong','Shimla','Somnath','Udaipur','Varanasi'];
 const featured={
+ Bhuj:[[23.25397,69.66928],['Aina Mahal','Prag Mahal','Kutch Museum'],['Regenta Resort Bhuj','The Fern Residency Bhuj','Hotel Prince Bhuj']],
  Ahmedabad:[[23.0225,72.5714],['Sabarmati Ashram','Adalaj Stepwell','Kankaria Lake'],['House of MG','Hyatt Regency Ahmedabad','ITC Narmada']],
  Mumbai:[[19.076,72.8777],['Gateway of India','Marine Drive','Chhatrapati Shivaji Maharaj Vastu Sangrahalaya'],['The Taj Mahal Palace','Trident Nariman Point','The Oberoi Mumbai']],
  Delhi:[[28.6139,77.209],['India Gate','Humayun’s Tomb','Qutub Minar'],['The Imperial New Delhi','The Claridges New Delhi','Shangri-La Eros New Delhi']],
